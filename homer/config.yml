@@ -1,0 +1,84 @@
+---
+title: "Homer Theme"
+subtitle: "Walkx"
+logo: "logo.png"
+
+header: false
+footer: '<p>Theme made with <span class="has-text-danger">❤️</span> by <a href="https://github.com/WalkxCode">Walkx</a></p>' # Set false if you want to hide it.
+
+stylesheet:
+  - "/assets/custom.css"
+
+columns: "3" # You can change this to any number that is a factor of 12: (1, 2, 3, 4, 6, 12)
+theme: default
+colors:
+  light:
+    highlight-primary: "#fff5f2"
+    highlight-secondary: "#fff5f2"
+    highlight-hover: "#bebebe"
+    background: "#12152B"
+    card-background: "rgba(255, 245, 242, 0.8)"
+    text: "#ffffff"
+    text-header: "#fafafa"
+    text-title: "#000000"
+    text-subtitle: "#111111"
+    card-shadow: rgba(0, 0, 0, 0.5)
+    link: "#3273dc"
+    link-hover: "#2e4053"
+    background-image: "www/assets/wallpaper-light.jpeg"
+  dark:
+    highlight-primary: "#181C3A"
+    highlight-secondary: "#181C3A"
+    highlight-hover: "#1F2347"
+    background: "#12152B"
+    card-background: "rgba(24, 28, 58, 0.8)"
+    text: "#eaeaea"
+    text-header: "#7C71DD"
+    text-title: "#fafafa"
+    text-subtitle: "#8B8D9C"
+    card-shadow: rgba(0, 0, 0, 0.5)
+    link: "#c1c1c1"
+    link-hover: "#fafafa"
+    background-image: "/www/assetswallpaper.jpeg"
+
+# Services
+services:
+  - name: "Services Mac"
+    icon: "fas fa-laptop"
+    items:
+      - name: "Open WebUI"
+        icon: "fas fa-brain"
+        subtitle: "Local LLMs"
+        url: "http://localhost:3000"
+      - name: "FreshRSS"
+        icon: "fas fa-rss"
+        subtitle: "RSS Feed"
+        url: "http://localhost:8091"
+
+  - name: "Services Pi"
+    icon: "fas fa-server"
+    items:
+      - name: "Paperless"
+        icon: "fa-solid fa-file-invoice"
+        subtitle: "Document Management"
+        url: "http://pi.local:8080"
+      - name: "Home Assistant"
+        icon: "fa-solid fa-house-signal"
+        subtitle: "Smart Home Control"
+        url: "http://homeassistant.local:8123"
+      - name: "Portainer"
+        icon: "fa-brands fa-docker"
+        subtitle: "Docker Management"
+        url: "http://pi.local:9450"
+
+  - name: "Administration"
+    icon: "fas fa-cogs"
+    items:
+      - name: "FritzBox"
+        icon: "fa-solid fa-globe"
+        subtitle: "Network Management"
+        url: "http://fritz.box"
+      - name: "Keycloak"
+        icon: "fas fa-user-shield"
+        subtitle: "Identity Management"
+        url: "https://www.keycloak.org/docs/latest"

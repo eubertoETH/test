@@ -1,0 +1,72 @@
+- name: Basic Setup and Container Deployment on Raspberry Pi
+  hosts: raspberrypi
+  become: true
+  vars:
+    compose_files:
+      - { src: "/Users/euberto/Desktop/ansibletest/Compose/docker-compose.paperless.yml", dest: "/home/euberto/containers/paperless/docker-compose.yml" }
+      - { src: "/Users/euberto/Desktop/ansibletest/Compose/docker-compose.portainer.yml", dest: "/home/euberto/containers/portainer/docker-compose.yml" }
+      - { src: "/Users/euberto/Desktop/ansibletest/Compose/docker-compose.homer.yml", dest: "/home/euberto/containers/homer/docker-compose.yml" }
+
+    container_paths:
+      paperless:
+        path: /home/euberto/containers/paperless
+        folders:
+          - consume
+          - data
+          - media
+          - pgdata
+          - redisdata
+      homer:
+        path: /home/euberto/containers/homer
+        folders:
+          - config
+      portainer:
+        path: /home/euberto/containers/portainer
+        folders: []
+
+  tasks:
+    - name: Ensure main container directories exist
+      file:
+        path: "{{ item.value.path }}"
+        state: directory
+        mode: '0755'
+      with_items: "{{ container_paths | dict2items }}"
+
+    - name: Ensure necessary subfolders exist for each container
+      file:
+        path: "{{ item.0.value.path }}/{{ item.1 }}"
+        state: directory
+        mode: '0755'
+      with_subelements:
+        - "{{ container_paths | dict2items }}"
+        - value.folders
+
+    - name: Copy Docker Compose files to Raspberry Pi
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: '0644'
+      with_items: "{{ compose_files }}"
+
+    - name: Run Docker Compose for each container
+      shell: docker-compose up -d
+      args:
+        chdir: "{{ item.value.path }}"
+      with_items: "{{ container_paths | dict2items }}"
+
+    - name: Copy Homer config file to Raspberry Pi
+      copy:
+        src: "/Users/euberto/Desktop/ansibletest/homer/config.yml"
+        dest: "/home/euberto/containers/homer/config.yml"
+        mode: '0644'
+
+    - name: Create Paperless superuser
+      shell: |
+        docker exec paperless ./manage.py createsuperuser --no-input --username root
+      args:
+        stdin: "paperless\npaperless\n"
+      environment:
+        DJANGO_SUPERUSER_USERNAME: root
+        DJANGO_SUPERUSER_PASSWORD: paperless
+        DJANGO_SUPERUSER_EMAIL: ""
+      ignore_errors: yes  # Prevents errors if superuser already exists

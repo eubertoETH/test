@@ -1,0 +1,40 @@
+
+services:
+  broker:
+    image: docker.io/library/redis:7
+    container_name: paperless_broker
+    restart: unless-stopped
+    volumes:
+      - /Users/euberto/Desktop/paperless/redisdata:/data  # Redis data stored locally
+
+  db:
+    image: docker.io/library/postgres:16
+    container_name: paperless_DB
+    restart: unless-stopped
+    volumes:
+      - /Users/euberto/Desktop/paperless/pgdata:/var/lib/postgresql/data  # PostgreSQL data stored locally
+    environment:
+      POSTGRES_DB: paperless
+      POSTGRES_USER: paperless
+      POSTGRES_PASSWORD: paperless
+
+  webserver:
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    container_name: paperless
+    restart: unless-stopped
+    depends_on:
+      - db
+      - broker
+    ports:
+      - "8020:8000"
+    volumes:
+      - /Users/euberto/Desktop/paperless/data:/usr/src/paperless/data   # Local storage for paperless data
+      - /Users/euberto/Desktop/paperless/media:/usr/src/paperless/media  # Local storage for media files
+      - /Users/euberto/Desktop/paperless/export:/usr/src/paperless/export  # Local storage for exports
+      - /Users/euberto/Desktop/paperless/consume:/usr/src/paperless/consume  # Local storage for consumed files
+    environment:
+      PAPERLESS_REDIS: redis://broker:6379
+      PAPERLESS_DBHOST: db
+      USERMAP_UID: 503  # Set this to your host user ID (you can check your UID with `id` command on Mac)
+      USERMAP_GID: 20   # Set this to your host group ID (you can check your GID with `id` command)
+
