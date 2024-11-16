@@ -5,7 +5,7 @@
       volumes:
         - /Users/euberto/Desktop/Homer:/www/assets
       ports:
-        - 8080:8080
+        - 8092:8080
       user: 503:20 # default
       environment:
         - INIT_ASSETS=1 # default
