@@ -8,4 +8,4 @@
 | **paperless_DB**          | PostgreSQL         | -             | 5432                |
 | **paperless**             | Paperless NGX      | 8020          | 8000                |
 | **portainer**             | Portainer          | 8010, 9450    | 8000, 9443          |
-| **homer**                 | Homer Dashboard    | 8080          | 8080                |
+| **homer**                 | Homer Dashboard    | 8092          | 8080                |
