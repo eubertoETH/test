@@ -27,4 +27,4 @@ jobs:
           pip install ansible ansible-lint
 
       - name: Run Ansible Lint
-        run: ansible-lint /Users/euberto/Desktop/mittelerde/ansible/ansible-testpi.yaml
+        run: ansible-lint /ansible/ansible-testpi.yaml
