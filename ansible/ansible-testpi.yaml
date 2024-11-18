@@ -1,3 +1,4 @@
+---
 - name: Basic Setup and Container Deployment on Raspberry Pi
   hosts: raspberrypi
   become: true
@@ -26,14 +27,14 @@
 
   tasks:
     - name: Ensure main container directories exist
-      file:
+      ansible.builtin.file:
         path: "{{ item.value.path }}"
         state: directory
         mode: '0755'
       with_items: "{{ container_paths | dict2items }}"
 
     - name: Ensure necessary subfolders exist for each container
-      file:
+      ansible.builtin.file:
         path: "{{ item.0.value.path }}/{{ item.1 }}"
         state: directory
         mode: '0755'
@@ -42,26 +43,28 @@
         - value.folders
 
     - name: Copy Docker Compose files to Raspberry Pi
-      copy:
+      ansible.builtin.copy:
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
         mode: '0644'
       with_items: "{{ compose_files }}"
 
     - name: Run Docker Compose for each container
-      shell: docker-compose up -d
+      ansible.builtin.command:
+        cmd: docker-compose up -d
       args:
         chdir: "{{ item.value.path }}"
       with_items: "{{ container_paths | dict2items }}"
+      changed_when: false  # Command does not modify if containers are already up
 
     - name: Copy Homer config file to Raspberry Pi
-      copy:
+      ansible.builtin.copy:
         src: "/Users/euberto/Desktop/ansibletest/homer/config.yml"
         dest: "/home/euberto/containers/homer/config.yml"
         mode: '0644'
 
     - name: Create Paperless superuser
-      shell: |
+      ansible.builtin.shell: |
         docker exec paperless ./manage.py createsuperuser --no-input --username root
       args:
         stdin: "paperless\npaperless\n"
@@ -69,4 +72,5 @@
         DJANGO_SUPERUSER_USERNAME: root
         DJANGO_SUPERUSER_PASSWORD: paperless
         DJANGO_SUPERUSER_EMAIL: ""
-      ignore_errors: yes  # Prevents errors if superuser already exists
+      failed_when: "'already exists' not in ansible_facts.stdout"  # Allow task to pass if user exists
+      changed_when: false  # Ensure task doesn't report a change unnecessarily#
