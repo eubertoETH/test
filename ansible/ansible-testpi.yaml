@@ -7,7 +7,7 @@
       - { src: "/Users/euberto/Desktop/ansibletest/Compose/docker-compose.paperless.yml", dest: "/home/euberto/containers/paperless/docker-compose.yml" }
       - { src: "/Users/euberto/Desktop/ansibletest/Compose/docker-compose.portainer.yml", dest: "/home/euberto/containers/portainer/docker-compose.yml" }
       - { src: "/Users/euberto/Desktop/ansibletest/Compose/docker-compose.homer.yml", dest: "/home/euberto/containers/homer/docker-compose.yml" }
-
+      - { src: "Users/euberto/Desktop/ansibletest/Compose/docker-compose.hass.yml", dest: "/home/euberto/containers/hass/docker-compose.yml" } 
     container_paths:
       paperless:
         path: /home/euberto/containers/paperless
