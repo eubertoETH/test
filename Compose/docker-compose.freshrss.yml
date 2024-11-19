@@ -7,7 +7,7 @@ services:
     ports:
       - "8091:80"  # Map local port 8091 to container's port 80
     volumes:
-      - /Users/euberto/Desktop/FreshRSS:/var/www/FreshRSS/data  # Mount local volume to container
+      - /home/euberto/containers/FreshRSS:/var/www/FreshRSS/data  # Mount local volume to container
     environment:
       - TZ=Europe/Berlin  # Set timezone as needed
     restart: unless-stopped

@@ -54,7 +54,9 @@
       ansible.builtin.copy:
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
-        mode: '0644'
+        mode: '0755'
+        owner: euberto  # Ensure the correct owner
+        group: euberto  # Ensure the correct group
       with_items: "{{ compose_files }}"
 
     - name: Run Docker Compose for each container

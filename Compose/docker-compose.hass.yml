@@ -9,5 +9,5 @@ services:
     environment:
       - TZ=Europe/Berlin # Replace with your actual time zone if different
     volumes:
-      - /Users/euberto/Desktop/mittelerde/HASS:/config
+      - /home/euberto/containers/hass:/config
       - /run/dbus:/run/dbus:ro
