@@ -34,5 +34,6 @@ services:
     environment:
       PAPERLESS_REDIS: redis://broker:6379
       PAPERLESS_DBHOST: db
+      PAPERLESS_IGNORE_SIGNATURES: "true"
       USERMAP_UID: 1000  # Set this to your host user ID on the Pi
       USERMAP_GID: 1000  # Set this to your host group ID on the Pi
