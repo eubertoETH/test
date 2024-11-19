@@ -1,4 +1,3 @@
----
 - name: Basic Setup and Container Deployment on Raspberry Pi
   hosts: raspberrypi
   become: true
@@ -8,6 +7,7 @@
       - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.portainer.yml", dest: "/home/euberto/containers/portainer/docker-compose.yml" }
       - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.homer.yml", dest: "/home/euberto/containers/homer/docker-compose.yml" }
       - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.hass.yml", dest: "/home/euberto/containers/hass/docker-compose.yml" }
+      - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.keycloak.yml", dest: "/home/euberto/containers/keycloak/docker-compose.yml" }
     container_paths:
       paperless:
         path: /home/euberto/containers/paperless
@@ -24,10 +24,14 @@
       portainer:
         path: /home/euberto/containers/portainer
         folders: []
-
       hass:
         path: /home/euberto/containers/hass
         folders: []
+      keycloak:
+        path: /home/euberto/containers/keycloak
+        folders:
+          - postgresql_data
+          - keycloak_data
 
   tasks:
     - name: Ensure main container directories exist
@@ -79,17 +83,7 @@
 - name: Test if services are accessible
   hosts: raspberrypi
   tasks:
-    - name: Check Paperless service
-      ansible.builtin.uri:
-        url: "http://localhost:8020"
-        return_content: yes
-      register: paperless_response
-    
-    - name: Debug Paperless response
-      debug:
-        msg: "Paperless response: {{ paperless_response.status }}"
-      when: paperless_response is defined
-
+  
     - name: Check Homer service
       ansible.builtin.uri:
         url: "http://localhost:8092"
@@ -123,4 +117,25 @@
       debug:
         msg: "Portainer response: {{ portainer_response.status }}"
       when: portainer_response is defined
-#
+
+    - name: Check Keycloak service
+      ansible.builtin.uri:
+        url: "http://localhost:8080"
+        return_content: yes
+      register: keycloak_response
+
+    - name: Debug Keycloak response
+      debug:
+        msg: "Keycloak response: {{ keycloak_response.status }}"
+      when: keycloak_response is defined
+    
+    - name: Check Paperless service
+      ansible.builtin.uri:
+        url: "http://localhost:8020"
+        return_content: yes
+      register: paperless_response
+    
+    - name: Debug Paperless response
+      debug:
+        msg: "Paperless response: {{ paperless_response.status }}"
+      when: paperless_response is defined
