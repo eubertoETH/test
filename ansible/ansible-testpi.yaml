@@ -4,10 +4,10 @@
   become: true
   vars:
     compose_files:
-      - { src: "/Users/euberto/Desktop/ansibletest/Compose/docker-compose.paperless.yml", dest: "/home/euberto/containers/paperless/docker-compose.yml" }
-      - { src: "/Users/euberto/Desktop/ansibletest/Compose/docker-compose.portainer.yml", dest: "/home/euberto/containers/portainer/docker-compose.yml" }
-      - { src: "/Users/euberto/Desktop/ansibletest/Compose/docker-compose.homer.yml", dest: "/home/euberto/containers/homer/docker-compose.yml" }
-      - { src: "Users/euberto/Desktop/ansibletest/Compose/docker-compose.hass.yml", dest: "/home/euberto/containers/hass/docker-compose.yml" } 
+      - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.paperless.yml", dest: "/home/euberto/containers/paperless/docker-compose.yml" }
+      - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.portainer.yml", dest: "/home/euberto/containers/portainer/docker-compose.yml" }
+      - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.homer.yml", dest: "/home/euberto/containers/homer/docker-compose.yml" }
+      - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.hass.yml", dest: "/home/euberto/containers/hass/docker-compose.yml" }
     container_paths:
       paperless:
         path: /home/euberto/containers/paperless
@@ -25,19 +25,27 @@
         path: /home/euberto/containers/portainer
         folders: []
 
+      hass:
+        path: /home/euberto/containers/hass
+        folders: []
+
   tasks:
     - name: Ensure main container directories exist
       ansible.builtin.file:
         path: "{{ item.value.path }}"
         state: directory
         mode: '0755'
-      with_items: "{{ container_paths | dict2items }}"
+        owner: euberto  # Ensure the correct owner
+        group: euberto  # Ensure the correct group
+      with_items: "{{ container_paths | dict2items }}"    
 
     - name: Ensure necessary subfolders exist for each container
       ansible.builtin.file:
         path: "{{ item.0.value.path }}/{{ item.1 }}"
         state: directory
         mode: '0755'
+        owner: euberto  # Ensure the correct owner
+        group: euberto  # Ensure the correct group
       with_subelements:
         - "{{ container_paths | dict2items }}"
         - value.folders
@@ -58,19 +66,59 @@
       changed_when: false  # Command does not modify if containers are already up
 
     - name: Copy Homer config file to Raspberry Pi
-      ansible.builtin.copy:
-        src: "/Users/euberto/Desktop/ansibletest/homer/config.yml"
+      copy:
+        src: "/Users/euberto/Desktop/mittelerde/homer/config.yml"
         dest: "/home/euberto/containers/homer/config.yml"
-        mode: '0644'
+        remote_src: no
+        mode: '0755'
+        owner: euberto  # Ensure the correct owner
+        group: euberto  # Ensure the correct group  
 
-    - name: Create Paperless superuser
-      ansible.builtin.shell: |
-        docker exec paperless ./manage.py createsuperuser --no-input --username root
-      args:
-        stdin: "paperless\npaperless\n"
-      environment:
-        DJANGO_SUPERUSER_USERNAME: root
-        DJANGO_SUPERUSER_PASSWORD: paperless
-        DJANGO_SUPERUSER_EMAIL: ""
-      failed_when: "'already exists' not in ansible_facts.stdout"  # Allow task to pass if user exists
-      changed_when: false  # Ensure task doesn't report a change unnecessarily#
+- name: Test if services are accessible
+  hosts: raspberrypi
+  tasks:
+    - name: Check Paperless service
+      ansible.builtin.uri:
+        url: "http://localhost:8020"
+        return_content: yes
+      register: paperless_response
+    
+    - name: Debug Paperless response
+      debug:
+        msg: "Paperless response: {{ paperless_response.status }}"
+      when: paperless_response is defined
+
+    - name: Check Homer service
+      ansible.builtin.uri:
+        url: "http://localhost:8092"
+        return_content: yes
+      register: homer_response
+
+    - name: Debug Homer response
+      debug:
+        msg: "Homer response: {{ homer_response.status }}"
+      when: homer_response is defined
+
+    - name: Check Home Assistant service
+      ansible.builtin.uri:
+        url: "http://localhost:8123"
+        return_content: yes
+      register: hass_response
+
+    - name: Debug Home Assistant response
+      debug:
+        msg: "Home Assistant response: {{ hass_response.status }}"
+      when: hass_response is defined
+
+    - name: Check Portainer service
+      ansible.builtin.uri:
+        url: "https://localhost:9450"
+        validate_certs: no  # Disable SSL certificate verification
+        return_content: yes
+      register: portainer_response
+
+    - name: Debug Portainer response
+      debug:
+        msg: "Portainer response: {{ portainer_response.status }}"
+      when: portainer_response is defined
+#
