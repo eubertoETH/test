@@ -30,6 +30,7 @@ services:
       KC_DB_URL_DATABASE: keycloak
       KEYCLOAK_ADMIN: euberto
       KEYCLOAK_ADMIN_PASSWORD: keycloak
+      KC_HOSTNAME: pi.local
     ports:
       - "8080:8080"  # Exposes Keycloak's default HTTP port
     volumes:
