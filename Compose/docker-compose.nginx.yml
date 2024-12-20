@@ -1,22 +1,17 @@
+
 services:
-  nginx:
-    image: nginx:latest
-    container_name: nginx_reverse_proxy
+  nginx-proxy-manager:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: nginx-proxy-manager
     restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
+      - "81:81"  # Web UI for Nginx Proxy Manager
+    environment:
+      - DB_SQLITE_FILE=/data/database.sqlite
     volumes:
-      - /home/euberto/containers/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - /home/euberto/containers/nginx/certs:/etc/nginx/certs:ro
-      - /home/euberto/containers/nginx/logs:/var/log/nginx
-      - /home/euberto/containers/nginx/html:/usr/share/nginx/html
-    networks:
-      - paperless_default
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
 
-networks:
-  paperless_default:
-    external: true
-
-
-    # Test if everything lands on Pi
+      

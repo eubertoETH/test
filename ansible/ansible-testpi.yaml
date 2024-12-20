@@ -8,7 +8,7 @@
       - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.homer.yml", dest: "/home/euberto/containers/homer/docker-compose.yml" }
       - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.hass.yml", dest: "/home/euberto/containers/hass/docker-compose.yml" }
       - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.keycloak.yml", dest: "/home/euberto/containers/keycloak/docker-compose.yml" }
-      - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.nginx.yml", dest: "/home/euberto/containers/nginx/docker-compose.yml" }
+      - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.nginx.yml", dest: "/home/euberto/containers/nginx/nginx.yml" }
     container_paths:
       paperless:
         path: /home/euberto/containers/paperless
@@ -70,23 +70,6 @@
         group: euberto
       with_items: "{{ compose_files }}"
 
-    - name: Copy NGINX configuration file to Raspberry Pi
-      ansible.builtin.copy:
-        src: "/Users/euberto/Desktop/mittelerde/nginx/nginx.conf"
-        dest: "/home/euberto/containers/nginx/nginx.conf"
-        mode: '0644'
-        owner: euberto
-        group: euberto
-
-    - name: Copy SSL certificates to Raspberry Pi
-      ansible.builtin.copy:
-        src: "/Users/euberto/Desktop/mittelerde/nginx/certs/"
-        dest: "/home/euberto/containers/nginx/certs/"
-        remote_src: no
-        mode: '0644'
-        owner: euberto
-        group: euberto
-
     - name: Deploy containers with Docker Compose
       ansible.builtin.command:
         cmd: docker-compose up -d
@@ -98,16 +81,27 @@
 - name: Test if services are accessible
   hosts: raspberrypi
   tasks:
-    - name: Check Homer service
+    - name: Check Nginx Web UI service (via port 81)
       ansible.builtin.uri:
-        url: "http://localhost:8092"
+        url: "http://localhost:81"
         return_content: yes
-      register: homer_response
+      register: nginx_response
 
-    - name: Debug Homer response
+    - name: Debug Nginx response
       debug:
-        msg: "Homer response: {{ homer_response.status }}"
-      when: homer_response is defined
+        msg: "Nginx response: {{ nginx_response.status }}"
+      when: nginx_response is defined
+
+    - name: Check Paperless service
+      ansible.builtin.uri:
+        url: "http://localhost:8020"
+        return_content: yes
+      register: paperless_response
+    
+    - name: Debug Paperless response
+      debug:
+        msg: "Paperless response: {{ paperless_response.status }}"
+      when: paperless_response is defined
 
     - name: Check Home Assistant service
       ansible.builtin.uri:
@@ -142,17 +136,6 @@
       debug:
         msg: "Keycloak response: {{ keycloak_response.status }}"
       when: keycloak_response is defined
-    
-    - name: Check Paperless service
-      ansible.builtin.uri:
-        url: "http://localhost:8020"
-        return_content: yes
-      register: paperless_response
-    
-    - name: Debug Paperless response
-      debug:
-        msg: "Paperless response: {{ paperless_response.status }}"
-      when: paperless_response is defined
 
     - name: Check NGINX service
       ansible.builtin.uri:
