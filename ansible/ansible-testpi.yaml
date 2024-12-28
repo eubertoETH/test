@@ -1,6 +1,17 @@
+# ------------------------------------------------------------------------------
+# PLAY 1: BASIC SETUP AND DEPLOYMENT OF CONTAINERS
+# This play sets up directories, copies over the Compose files, and deploys containers.
+# ------------------------------------------------------------------------------
 - name: Basic Setup and Container Deployment on Raspberry Pi
   hosts: raspberrypi
   become: true
+  
+  # ----------------------------------------------------------------------------
+  # VARIABLES
+  # compose_files: List of source (Mac) → destination (Raspberry Pi) files for
+  #               Docker Compose configurations.
+  # container_paths: Defines the container directories and subfolders to create.
+  # ----------------------------------------------------------------------------
   vars:
     compose_files:
       - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.paperless.yml", dest: "/home/euberto/containers/paperless/docker-compose.yml" }
@@ -41,6 +52,24 @@
           - html
 
   tasks:
+    # --------------------------------------------------------------------------
+    # TASK 1: Update apt cache and upgrade all packages
+    # --------------------------------------------------------------------------
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Upgrade all packages
+      ansible.builtin.apt:
+        upgrade: dist
+        autoremove: yes
+        force_apt_get: yes
+
+    # --------------------------------------------------------------------------
+    # TASK 2: Ensure main container directories exist
+    # Creates the main folders for each container path.
+    # --------------------------------------------------------------------------
     - name: Ensure main container directories exist
       ansible.builtin.file:
         path: "{{ item.value.path }}"
@@ -50,6 +79,10 @@
         group: euberto
       with_items: "{{ container_paths | dict2items }}"    
 
+    # --------------------------------------------------------------------------
+    # TASK 3: Ensure necessary subfolders exist for each container
+    # Goes through each container path and creates subfolders.
+    # --------------------------------------------------------------------------
     - name: Ensure necessary subfolders exist for each container
       ansible.builtin.file:
         path: "{{ item.0.value.path }}/{{ item.1 }}"
@@ -61,6 +94,10 @@
         - "{{ container_paths | dict2items }}"
         - value.folders
 
+    # --------------------------------------------------------------------------
+    # TASK 4: Copy Docker Compose files to the Raspberry Pi
+    # Copies the Compose config from the local machine to the target Pi paths.
+    # --------------------------------------------------------------------------
     - name: Copy Docker Compose files to Raspberry Pi
       ansible.builtin.copy:
         src: "{{ item.src }}"
@@ -70,6 +107,10 @@
         group: euberto
       with_items: "{{ compose_files }}"
 
+    # --------------------------------------------------------------------------
+    # TASK 5: Deploy containers with Docker Compose
+    # Executes docker-compose up -d in each container directory, if changed.
+    # --------------------------------------------------------------------------
     - name: Deploy containers with Docker Compose
       ansible.builtin.command:
         cmd: docker-compose up -d
@@ -78,9 +119,17 @@
       with_items: "{{ container_paths | dict2items }}"
       changed_when: false  # Command does not modify if containers are already up
 
+
+# ------------------------------------------------------------------------------
+# PLAY 2: TEST IF SERVICES ARE ACCESSIBLE
+# This play runs a series of checks against each service to ensure they're up.
+# ------------------------------------------------------------------------------
 - name: Test if services are accessible
   hosts: raspberrypi
   tasks:
+    # --------------------------------------------------------------------------
+    # TASK 1: Check Nginx Web UI service (via port 81)
+    # --------------------------------------------------------------------------
     - name: Check Nginx Web UI service (via port 81)
       ansible.builtin.uri:
         url: "http://localhost:81"
@@ -92,6 +141,9 @@
         msg: "Nginx response: {{ nginx_response.status }}"
       when: nginx_response is defined
 
+    # --------------------------------------------------------------------------
+    # TASK 2: Check Paperless service (port 8020)
+    # --------------------------------------------------------------------------
     - name: Check Paperless service
       ansible.builtin.uri:
         url: "http://localhost:8020"
@@ -103,6 +155,9 @@
         msg: "Paperless response: {{ paperless_response.status }}"
       when: paperless_response is defined
 
+    # --------------------------------------------------------------------------
+    # TASK 3: Check Home Assistant service (port 8123)
+    # --------------------------------------------------------------------------
     - name: Check Home Assistant service
       ansible.builtin.uri:
         url: "http://localhost:8123"
@@ -114,6 +169,9 @@
         msg: "Home Assistant response: {{ hass_response.status }}"
       when: hass_response is defined
 
+    # --------------------------------------------------------------------------
+    # TASK 4: Check Portainer service (port 9450, SSL)
+    # --------------------------------------------------------------------------
     - name: Check Portainer service
       ansible.builtin.uri:
         url: "https://localhost:9450"
@@ -126,6 +184,9 @@
         msg: "Portainer response: {{ portainer_response.status }}"
       when: portainer_response is defined
 
+    # --------------------------------------------------------------------------
+    # TASK 5: Check Keycloak service (port 8080)
+    # --------------------------------------------------------------------------
     - name: Check Keycloak service
       ansible.builtin.uri:
         url: "http://localhost:8080"
@@ -137,6 +198,9 @@
         msg: "Keycloak response: {{ keycloak_response.status }}"
       when: keycloak_response is defined
 
+    # --------------------------------------------------------------------------
+    # TASK 6: Check NGINX service (port 80 by default)
+    # --------------------------------------------------------------------------
     - name: Check NGINX service
       ansible.builtin.uri:
         url: "http://localhost"
