@@ -19,7 +19,7 @@
       - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.homer.yml", dest: "/home/euberto/containers/homer/docker-compose.yml" }
       - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.hass.yml", dest: "/home/euberto/containers/hass/docker-compose.yml" }
       - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.keycloak.yml", dest: "/home/euberto/containers/keycloak/docker-compose.yml" }
-      - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.nginx.yml", dest: "/home/euberto/containers/nginx/nginx.yml" }
+ #     - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.nginx.yml", dest: "/home/euberto/containers/nginx/nginx.yml" }
     container_paths:
       paperless:
         path: /home/euberto/containers/paperless
@@ -44,12 +44,12 @@
         folders:
           - postgresql_data
           - keycloak_data
-      nginx:
-        path: /home/euberto/containers/nginx
-        folders:
-          - certs
-          - logs
-          - html
+ #     nginx:
+  #      path: /home/euberto/containers/nginx
+   #     folders:
+    #      - certs
+     #     - logs
+      #    - html
 
   tasks:
     # --------------------------------------------------------------------------
@@ -130,16 +130,16 @@
     # --------------------------------------------------------------------------
     # TASK 1: Check Nginx Web UI service (via port 81)
     # --------------------------------------------------------------------------
-    - name: Check Nginx Web UI service (via port 81)
-      ansible.builtin.uri:
-        url: "http://localhost:81"
-        return_content: yes
-      register: nginx_response
+#    - name: Check Nginx Web UI service (via port 81)
+#      ansible.builtin.uri:
+#        url: "http://localhost:81"
+#        return_content: yes
+#      register: nginx_response
 
-    - name: Debug Nginx response
-      debug:
-        msg: "Nginx response: {{ nginx_response.status }}"
-      when: nginx_response is defined
+#    - name: Debug Nginx response
+#      debug:
+#        msg: "Nginx response: {{ nginx_response.status }}"
+#      when: nginx_response is defined
 
     # --------------------------------------------------------------------------
     # TASK 2: Check Paperless service (port 8020)
@@ -201,13 +201,13 @@
     # --------------------------------------------------------------------------
     # TASK 6: Check NGINX service (port 80 by default)
     # --------------------------------------------------------------------------
-    - name: Check NGINX service
-      ansible.builtin.uri:
-        url: "http://localhost"
-        return_content: yes
-      register: nginx_response
+   # - name: Check NGINX service
+  #    ansible.builtin.uri:
+   #     url: "http://localhost"
+    #    return_content: yes
+     # register: nginx_response
 
-    - name: Debug NGINX response
-      debug:
-        msg: "NGINX response: {{ nginx_response.status }}"
-      when: nginx_response is defined
+#    - name: Debug NGINX response
+ #     debug:
+  #      msg: "NGINX response: {{ nginx_response.status }}"
+   #   when: nginx_response is defined
