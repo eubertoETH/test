@@ -5,7 +5,7 @@
 - name: Basic Setup and Container Deployment on Raspberry Pi
   hosts: raspberrypi
   become: true
-  
+
   # ----------------------------------------------------------------------------
   # VARIABLES
   # compose_files: List of source (Mac) → destination (Raspberry Pi) files for
@@ -19,7 +19,8 @@
       - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.homer.yml", dest: "/home/euberto/containers/homer/docker-compose.yml" }
       - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.hass.yml", dest: "/home/euberto/containers/hass/docker-compose.yml" }
       - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.keycloak.yml", dest: "/home/euberto/containers/keycloak/docker-compose.yml" }
- #     - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.nginx.yml", dest: "/home/euberto/containers/nginx/nginx.yml" }
+      - { src: "/Users/euberto/Desktop/mittelerde/Compose/docker-compose.pihole.yml", dest: "/home/euberto/containers/pihole/docker-compose.yml" }
+
     container_paths:
       paperless:
         path: /home/euberto/containers/paperless
@@ -29,27 +30,31 @@
           - media
           - pgdata
           - redisdata
+
       homer:
         path: /home/euberto/containers/homer
         folders:
           - config
+
       portainer:
         path: /home/euberto/containers/portainer
         folders: []
+
       hass:
         path: /home/euberto/containers/hass
         folders: []
+
       keycloak:
         path: /home/euberto/containers/keycloak
         folders:
           - postgresql_data
           - keycloak_data
- #     nginx:
-  #      path: /home/euberto/containers/nginx
-   #     folders:
-    #      - certs
-     #     - logs
-      #    - html
+
+      pihole:
+        path: /home/euberto/containers/pihole
+        folders:
+          - etc-pihole
+          - etc-dnsmasq.d
 
   tasks:
     # --------------------------------------------------------------------------
@@ -77,7 +82,7 @@
         mode: '0755'
         owner: euberto
         group: euberto
-      with_items: "{{ container_paths | dict2items }}"    
+      with_items: "{{ container_paths | dict2items }}"
 
     # --------------------------------------------------------------------------
     # TASK 3: Ensure necessary subfolders exist for each container
@@ -128,35 +133,21 @@
   hosts: raspberrypi
   tasks:
     # --------------------------------------------------------------------------
-    # TASK 1: Check Nginx Web UI service (via port 81)
-    # --------------------------------------------------------------------------
-#    - name: Check Nginx Web UI service (via port 81)
-#      ansible.builtin.uri:
-#        url: "http://localhost:81"
-#        return_content: yes
-#      register: nginx_response
-
-#    - name: Debug Nginx response
-#      debug:
-#        msg: "Nginx response: {{ nginx_response.status }}"
-#      when: nginx_response is defined
-
-    # --------------------------------------------------------------------------
-    # TASK 2: Check Paperless service (port 8020)
+    # TASK 1: Check Paperless service (port 8020)
     # --------------------------------------------------------------------------
     - name: Check Paperless service
       ansible.builtin.uri:
         url: "http://localhost:8020"
         return_content: yes
       register: paperless_response
-    
+
     - name: Debug Paperless response
       debug:
         msg: "Paperless response: {{ paperless_response.status }}"
       when: paperless_response is defined
 
     # --------------------------------------------------------------------------
-    # TASK 3: Check Home Assistant service (port 8123)
+    # TASK 2: Check Home Assistant service (port 8123)
     # --------------------------------------------------------------------------
     - name: Check Home Assistant service
       ansible.builtin.uri:
@@ -170,7 +161,7 @@
       when: hass_response is defined
 
     # --------------------------------------------------------------------------
-    # TASK 4: Check Portainer service (port 9450, SSL)
+    # TASK 3: Check Portainer service (port 9450, SSL)
     # --------------------------------------------------------------------------
     - name: Check Portainer service
       ansible.builtin.uri:
@@ -185,7 +176,7 @@
       when: portainer_response is defined
 
     # --------------------------------------------------------------------------
-    # TASK 5: Check Keycloak service (port 8080)
+    # TASK 4: Check Keycloak service (port 8080)
     # --------------------------------------------------------------------------
     - name: Check Keycloak service
       ansible.builtin.uri:
@@ -199,15 +190,15 @@
       when: keycloak_response is defined
 
     # --------------------------------------------------------------------------
-    # TASK 6: Check NGINX service (port 80 by default)
+    # TASK 5: Check Pi-hole service (port 8021, if you configured WEB_PORT=8021)
     # --------------------------------------------------------------------------
-   # - name: Check NGINX service
-  #    ansible.builtin.uri:
-   #     url: "http://localhost"
-    #    return_content: yes
-     # register: nginx_response
+    - name: Check Pi-hole service
+      ansible.builtin.uri:
+        url: "http://localhost:8021/admin"
+        return_content: yes
+      register: pihole_response
 
-#    - name: Debug NGINX response
- #     debug:
-  #      msg: "NGINX response: {{ nginx_response.status }}"
-   #   when: nginx_response is defined
+    - name: Debug Pi-hole response
+      debug:
+        msg: "Pi-hole response: {{ pihole_response.status }}"
+      when: pihole_response is defined

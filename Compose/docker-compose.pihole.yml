@@ -1,0 +1,17 @@
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    # Host networking bypasses normal port mappings
+    network_mode: "host"
+    environment:
+      TZ: "YOUR_TIMEZONE"       # e.g., "Europe/Berlin"
+      WEBPASSWORD: "YOURPASS"   # Web UI password
+      WEB_PORT: "8021"          # The Pi-hole web interface will run on this port
+      DNSMASQ_LISTENING: "all"  # Ensures Pi-hole listens on all interfaces
+      # SERVERIP: "192.168.x.x" # Recommended if Pi-hole needs to know its IP
+    volumes:
+      - ./etc-pihole/:/etc/pihole/
+      - ./etc-dnsmasq.d/:/etc/dnsmasq.d/
+    restart: unless-stopped
+    
